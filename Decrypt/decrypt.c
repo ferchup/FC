@@ -87,27 +87,37 @@ uint32_t parse_mask(uint8_t *in, int64_t **key_mask){
 
 void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int64_t *plaintext_mask, uint8_t *key, uint8_t *plain_text, uint8_t *cypher_text)
 {	
-	uint8_t i = 0;
-	uint8_t 
+	uint8_t i = 0, encontrado=0;
 	uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 	
+	
 	struct AES_ctx ctx;
-	while(!encontrado){
-		
-		parse(n_key_mask, i, 
+	while(!encontrado || i<10000){
+        char *line;
+        if(i<10){
+            snprintf(&line,sizeof(key)+16, "%s000%d", key,i );
+        }else if(i<100){
+            snprintf(&line,sizeof(key)+16, "%s00%d", key,i);
+        }else if(i<1000){
+            snprintf(&line,sizeof(key)+16, "%s0%d", key,i);
+        }else{
+            snprintf(&line,sizeof(key)+16, "%s%d", key,i);
+        }
 		
 		AES_init_ctx_iv(&ctx, key, iv);
-    	AES_CBC_decrypt_buffer(&ctx, plain_text, 16);
+    	AES_CBC_decrypt_buffer(&ctx, cypher_text, 16);
 	
-		if (0 == memcmp((char*) cypher_text, (char*) plain_text, 16)) {
-        	printf("SUCCESS!\n");
-    	} else {
-        	printf("FAILURE!\n");
+		if (0 == memcmp((char*) cypher_text, (char*) plain_text, 16))
+        	encontrado=1;
+    	i++;
     }
-	}
-	
-	
+    if(encontrado){
+    	printf("CONSEGUIDO");
+    }else{
+    	printf("FALLIDO");
+    }
 }
+	
 
 int main(int argc, char *argv[])
 {
